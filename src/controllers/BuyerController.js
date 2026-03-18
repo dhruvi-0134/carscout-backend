@@ -1,56 +1,49 @@
-const BuyerModels = require("../models/BuyerModels")
-const bcrypt = require("bcrypt")
+const Buyer = require("../models/BuyerModel")
 
-const registerBuyer = async (req, res) => {
-
+const addBuyer = async (req, res) => {
     try {
-
-        const { firstName, lastName, email, password } = req.body
-
-        if (!firstName) {
-            return res.status(400).json({ message: "firstName field is required" })
-        }
-
-        if (!lastName) {
-            return res.status(400).json({ message: "lastName field is required" })
-        }
-
-        if (!email) {
-            return res.status(400).json({ message: "email field is required" })
-        }
-
-        if (!password) {
-            return res.status(400).json({ message: "password field is required" })
-        }
-
-        const hashedpassword = await bcrypt.hash(password, 10)
-
-        const savedBuyer = await BuyerModels.create({
-            firstName,
-            lastName,
-            email,
-            password: hashedpassword
-        })
-
-        res.status(201).json({
-            message: "Buyer registered successfully",
-            data: savedBuyer
-        })
-
+        const buyer = await Buyer.create(req.body)
+        res.status(201).json({ message: "Buyer added", data: buyer })
     } catch (err) {
-
-        if (err.code === 11000) {
-            return res.status(400).json({
-                message: "Email already exists"
-            })
-        }
-
-        res.status(500).json({
-            message: err.message
-        })
+        res.status(500).json({ message: "error adding buyer", err })
     }
 }
-
+const getAllbuyers = async (req, res) => {
+    try {
+        const buyer = await Buyer.find()
+        res.status(200).json({ message: "Buyer fetched", data: buyer })
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching buyers", err })
+    }
+}
+const getBuyerById = async (req, res) => {
+    try {
+        const buyer = await Buyer.findById(req.params.id)
+        res.status(200).json({ data: buyer })
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching buyer", err })
+    }
+}
+const updateBuyer = async (req, res) => {
+    try {
+        const buyer = await Buyer.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        res.status(200).json({ message: "Buyer updated", data: buyer })
+    } catch (err) {
+        res.status(500).json({ message: "Error updating buyer", err })
+    }
+}
+const deleteBuyer = async (req, res) => {
+    try {
+        const buyer = await Buyer.findByIdAndDelete(req.params.id)
+        res.status(200).json({ message: "Buyer deleted", data: buyer })
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting buyer", err })
+    }
+}
 module.exports = {
-    registerBuyer
+    addBuyer,
+    getAllbuyers,
+    getBuyerById,
+    updateBuyer,
+    deleteBuyer
 }
