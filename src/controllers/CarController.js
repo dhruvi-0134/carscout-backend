@@ -1,65 +1,111 @@
 const Car = require("../models/CarModel")
-const { uploadToCloudinary } = require("../utils/CloudinaryUtil")
+const Media = require("../models/MediaGalleryModel")
+
+
+// Add Car
 const addCar = async (req, res) => {
     try {
-        console.log("BODY 👉", req.body);
-        console.log("FILE 👉", req.file);
+        {/*const existingCar = await Car.findOne({
+    sellerId:req.body.sellerId,
+    brand:req.body.brand,
+    model:req.body.model,
+    year:req.body.year
+})
 
-        if (!req.file) {
-            return res.status(400).json({
-                message: "Image file not received"
-            });
-        }
+  if(existingCar){
+   return res.status(400).json({
+     message:"Car already exists"
+ })
+}*/}
 
-        const cloudinaryResponse = await uploadToCloudinary(req.file.path);
 
-        console.log("CLOUDINARY 👉", cloudinaryResponse);
 
-        const savedCar = await Car.create({
-            ...req.body,
-            image: cloudinaryResponse.secure_url,
-            public_id: cloudinaryResponse.public_id
-        });
+        const newCar = await Car.create(req.body)
 
         res.status(201).json({
             message: "Car added successfully",
-            data: savedCar
-        });
-
-    } catch (err) {
-        console.log("FINAL ERROR 👉", err);
-
-        res.status(500).json({
-            message: "Error while creating car",
-            error: err.message
-        });
-    }
-};
-
-
-const getAllCars = async (req, res) => {
-    try {
-        const cars = await Car.find()
-            .populate("seller_id")
-        res.status(200).json({
-            message: "Cars fetched successfully",
-            data: cars
+            data: newCar
         })
+
     } catch (err) {
         res.status(500).json({
-            message: "Error fetching cars",
+            message: "Error while adding car",
             err
         })
     }
 }
-const getcarById = async (req, res) => {
+
+
+// Get All Cars
+const getAllCars = async (req, res) => {
     try {
-        const car = await Car.findById(req.params.id)
-            .populate("seller_id")
+        const cars = await Car.find().populate({
+            path: "sellerId",
+            populate: {
+                path: "userId"
+            }
+        })
+
+        const carsWithMedia = await Promise.all(
+            cars.map(async (car) => {
+
+                const media = await Media.find({
+                    carId: car._id
+                }).select("mediaUrl mediaType");
+
+                return {
+                    ...car.toObject(),
+                    media: media
+                };
+            })
+        );
+
+        res.status(200).json({
+            message: "Cars fetched successfully",
+            data: carsWithMedia
+        });
+
+    } catch (err) {
+        console.error(err);
+
+        res.status(500).json({
+            message: "Error fetching cars",
+            err: err.message
+        });
+    }
+};
+// Get Car By ID
+const getCarById = async (req, res) => {
+    try {
+
+        const carId = req.params.id
+        //get car
+
+        const car = await Car.findById(carId)
+            .populate("sellerId")   // ✅ FIRST LEVEL
+            .populate("sellerId.userId"); // ✅ SECOND LEVEL
+        if (!car) {
+            return res.status(404).json({
+                message: "Car not found"
+            })
+        }
+        // Get media for this car
+        const media = await Media.find({
+            carId: car._id
+        })
+
+        // Combine car + media
+        const carWithMedia = {
+            ...car.toObject(),
+            media: media
+        }
+
+
         res.status(200).json({
             message: "Car fetched successfully",
-            data: car
+            data: carWithMedia
         })
+
     } catch (err) {
         res.status(500).json({
             message: "Error fetching car",
@@ -67,17 +113,25 @@ const getcarById = async (req, res) => {
         })
     }
 }
-const UpdateCar = async (req, res) => {
+
+
+// Update Car
+const updateCar = async (req, res) => {
     try {
-        const car = await Car.findByIdAndUpdate(
-            req.params.id,
+
+        const carId = req.params.id
+
+        const updatedCar = await Car.findByIdAndUpdate(
+            carId,
             req.body,
             { new: true }
         )
+
         res.status(200).json({
             message: "Car updated successfully",
-            data: car
+            data: updatedCar
         })
+
     } catch (err) {
         res.status(500).json({
             message: "Error updating car",
@@ -85,13 +139,21 @@ const UpdateCar = async (req, res) => {
         })
     }
 }
+
+
+// Delete Car
 const deleteCar = async (req, res) => {
     try {
-        const car = await Car.findByIdAndDelete(req.params.id)
+
+        const carId = req.params.id
+
+        const deletedCar = await Car.findByIdAndDelete(carId)
+
         res.status(200).json({
             message: "Car deleted successfully",
-            data: car
+            data: deletedCar
         })
+
     } catch (err) {
         res.status(500).json({
             message: "Error deleting car",
@@ -100,10 +162,11 @@ const deleteCar = async (req, res) => {
     }
 }
 
+
 module.exports = {
     addCar,
     getAllCars,
-    getcarById,
-    UpdateCar,
+    getCarById,
+    updateCar,
     deleteCar
 }

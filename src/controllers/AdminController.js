@@ -1,48 +1,98 @@
-const Admin = require("../models/AdminModel")
-const addAdmin = async (req, res) => {
+const User = require("../models/UserModel")
+const Seller = require("../models/SellerModel")
+const Listing = require("../models/CarListingModel")
+
+// Get all users
+const getAllUsers = async (req, res) => {
     try {
-        const admin = await Admin.create(req.body)
-        res.status(201).json({ message: "Admin added", data: admin })
+
+        const users = await User.find()
+
+        res.status(200).json({
+            message: "Users fetched successfully",
+            data: users
+        })
+
     } catch (err) {
-        res.status(500).json({ message: "Error adding admin", err })
+        res.status(500).json({
+            message: "Error fetching users",
+            err
+        })
     }
 }
-const getAllAdmins = async (req, res) => {
+
+// Block user
+const blockUser = async (req, res) => {
     try {
-        const admins = await Admin.find()
-        res.status(200).json({ message: "Admin fetched", data: admins })
+
+        const userId = req.params.id
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { accountStatus: "blocked" },
+            { new: true }
+        )
+
+        res.status(200).json({
+            message: "User blocked",
+            data: updatedUser
+        })
+
     } catch (err) {
-        res.status(500).json({ message: "error fetching admins", err })
+        res.status(500).json({
+            message: "Error blocking user",
+            err
+        })
     }
 }
-const getAdminById = async (req, res) => {
+
+// Verify seller
+const verifySeller = async (req, res) => {
     try {
-        const admin = await Admin.findById(req.params.id)
-        res.status(200).json({ data: admin })
+
+        const sellerId = req.params.id
+
+        const seller = await Seller.findByIdAndUpdate(
+            sellerId,
+            { verificationStatus: true },
+            { new: true }
+        )
+
+        res.status(200).json({
+            message: "Seller verified",
+            data: seller
+        })
+
     } catch (err) {
-        res.status(500).json({ message: "Error fetching admin", err })
+        res.status(500).json({
+            message: "Error verifying seller",
+            err
+        })
     }
 }
-const UpadateAdmin = async (req, res) => {
+
+// Get all listings
+const getAllListings = async (req, res) => {
     try {
-        const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        res.status(200).json({ message: "Admin updated", data: admin })
+
+        const listings = await Listing.find().populate("carId")
+
+        res.status(200).json({
+            message: "Listings fetched",
+            data: listings
+        })
+
     } catch (err) {
-        res.status(500).json({ message: "Error updating admin", err })
+        res.status(500).json({
+            message: "Error fetching listings",
+            err
+        })
     }
 }
-const deleteAdmin = async (req, res) => {
-    try {
-        const admin = await Admin.findByIdAndDelete(req.params.id)
-        res.status(200).json({ message: "Admin deleted", data: admin })
-    } catch (err) {
-        res.status(500).json({ message: "Error deleting admin", err })
-    }
-}
+
 module.exports = {
-    addAdmin,
-    getAllAdmins,
-    getAdminById,
-    UpadateAdmin,
-    deleteAdmin
+    getAllUsers,
+    blockUser,
+    verifySeller,
+    getAllListings
 }

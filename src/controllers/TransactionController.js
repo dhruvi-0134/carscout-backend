@@ -1,23 +1,30 @@
 const Transaction = require("../models/TransactionModel")
 
-// Add Transaction
-const addTransaction = async (req, res) => {
+// Create Transaction
+const createTransaction = async (req, res) => {
     try {
+        const existingTransaction = await Transaction.findOne({
+            carId: req.body.carId
+        })
 
-        const transaction = await Transaction.create(req.body)
+        if (existingTransaction) {
+            return res.status(400).json({
+                message: "Transaction already exists for this car"
+            })
+        }
+
+        const newTransaction = await Transaction.create(req.body)
 
         res.status(201).json({
             message: "Transaction created successfully",
-            data: transaction
+            data: newTransaction
         })
 
     } catch (err) {
-
         res.status(500).json({
-            message: "Error while creating transaction",
+            message: "Error creating transaction",
             err
         })
-
     }
 }
 
@@ -37,12 +44,10 @@ const getAllTransactions = async (req, res) => {
         })
 
     } catch (err) {
-
         res.status(500).json({
             message: "Error fetching transactions",
-            err
+            err: err.message
         })
-
     }
 }
 
@@ -51,10 +56,18 @@ const getAllTransactions = async (req, res) => {
 const getTransactionById = async (req, res) => {
     try {
 
-        const transaction = await Transaction.findById(req.params.id)
+        const transactionId = req.params.id
+
+        const transaction = await Transaction.findById(transactionId)
             .populate("buyerId")
             .populate("sellerId")
             .populate("carId")
+
+        if (!transaction) {
+            return res.status(404).json({
+                message: "Transaction not found"
+            })
+        }
 
         res.status(200).json({
             message: "Transaction fetched successfully",
@@ -62,12 +75,10 @@ const getTransactionById = async (req, res) => {
         })
 
     } catch (err) {
-
         res.status(500).json({
             message: "Error fetching transaction",
             err
         })
-
     }
 }
 
@@ -76,24 +87,24 @@ const getTransactionById = async (req, res) => {
 const updateTransaction = async (req, res) => {
     try {
 
-        const transaction = await Transaction.findByIdAndUpdate(
-            req.params.id,
+        const transactionId = req.params.id
+
+        const updatedTransaction = await Transaction.findByIdAndUpdate(
+            transactionId,
             req.body,
             { new: true }
         )
 
         res.status(200).json({
             message: "Transaction updated successfully",
-            data: transaction
+            data: updatedTransaction
         })
 
     } catch (err) {
-
         res.status(500).json({
             message: "Error updating transaction",
             err
         })
-
     }
 }
 
@@ -102,25 +113,26 @@ const updateTransaction = async (req, res) => {
 const deleteTransaction = async (req, res) => {
     try {
 
-        const transaction = await Transaction.findByIdAndDelete(req.params.id)
+        const transactionId = req.params.id
+
+        const deletedTransaction = await Transaction.findByIdAndDelete(transactionId)
 
         res.status(200).json({
             message: "Transaction deleted successfully",
-            data: transaction
+            data: deletedTransaction
         })
 
     } catch (err) {
-
         res.status(500).json({
             message: "Error deleting transaction",
             err
         })
-
     }
 }
 
+
 module.exports = {
-    addTransaction,
+    createTransaction,
     getAllTransactions,
     getTransactionById,
     updateTransaction,

@@ -1,21 +1,29 @@
 const mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const paymentSchema = new Schema({
-    transaction_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "transactions"
-    },
-    payment_method: {
-        type: String,
+
+const paymentSchema = new mongoose.Schema({
+
+    transactionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "transactions",
         required: true
     },
-    payment_status: {
+
+    paymentMethod: {
         type: String,
-        defult: "Pending"
+        enum: ["card", "upi", "netbanking", "cash"]
     },
-    payment_date: {
+
+    paymentStatus: {
+        type: String,
+        enum: ["pending", "completed", "failed"],
+        default: "pending"
+    },
+
+    paymentTime: {
         type: Date,
-        defult: Date.now
+        default: Date.now
     }
+
 })
+
 module.exports = mongoose.model("payments", paymentSchema)

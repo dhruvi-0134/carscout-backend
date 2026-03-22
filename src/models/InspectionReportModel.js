@@ -1,27 +1,34 @@
 const mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const inspectionSchema = new Schema({
-    car_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "cars"
-    },
-    inspection_score: {
-        type: Number,
+
+const inspectionReportSchema = new mongoose.Schema({
+
+    carId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "cars",
         required: true
     },
-    accident_history: {
+
+    healthScore: {
+        type: Number
+    },
+
+    accidentDetails: {
         type: String
     },
-    service_history: {
+
+    serviceDetails: {
         type: String
     },
-    inspection_date: {
+
+    inspector: {
+        type: String
+    },
+
+    inspectionDate: {
         type: Date,
         default: Date.now
-    },
-    inspector_name: {
-        type: String,
-        required: true
     }
+
 })
-module.exports = mongoose.model("inspectionreports", inspectionSchema)
+
+module.exports = mongoose.model("inspectionreports", inspectionReportSchema)

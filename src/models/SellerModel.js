@@ -1,47 +1,34 @@
 const mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const sellerSchema = new Schema({
-    seller_name: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
 
-    },
-    password: {
-        type: String,
+const sellerSchema = new mongoose.Schema({
+
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
         required: true
     },
-    phone: {
-        type: String,
-        required: true
-    },
-    seller_type: {
-        type: String,
-        required: true
-    },
-    company_name: {
+
+    companyName: {
         type: String
     },
-    address: {
+
+    sellerType: {
         type: String,
-        required: true
+        enum: ["dealer", "private"]
     },
+
     rating: {
         type: Number,
         default: 0
     },
-    is_verified: {
+
+    verificationStatus: {
         type: Boolean,
         default: false
-    },
-    account_status: {
-        type: String,
-        enum: ["active", "suspended"],
-        default: "active"
     }
-}, { timestamps: true })
+
+}, {
+    timestamps: true
+})
+
 module.exports = mongoose.model("sellers", sellerSchema)

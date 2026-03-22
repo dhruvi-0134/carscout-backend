@@ -1,21 +1,28 @@
 const mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const mediaSchema = new Schema({
-    car_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "cars"
+
+const mediaSchema = new mongoose.Schema({
+
+    carId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "cars",
+        required: true
     },
-    media_url: {
+
+    mediaUrl: {
         type: String,
         required: true
     },
-    media_type: {
+
+    mediaType: {
         type: String,
-        required: true
+        enum: ["image", "video"]
     },
-    upload_date: {
+
+    uploadTime: {
         type: Date,
         default: Date.now
     }
+
 })
+
 module.exports = mongoose.model("mediagallery", mediaSchema)

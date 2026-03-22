@@ -1,14 +1,13 @@
 const mongoose = require("mongoose")
-const Schema = mongoose.Schema
 
-const carSchema = new Schema({
-    seller_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "sellers",
+const carSchema = new mongoose.Schema({
+    sellerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "sellers",   // ✅ MUST MATCH EXACTLY
         required: true
     },
 
-    make: {
+    brand: {
         type: String,
         required: true
     },
@@ -19,8 +18,7 @@ const carSchema = new Schema({
     },
 
     year: {
-        type: Number,
-        required: true
+        type: Number
     },
 
     price: {
@@ -28,24 +26,16 @@ const carSchema = new Schema({
         required: true
     },
 
-    mileage: {
-        type: Number,
-        required: true
+    distanceDriven: {
+        type: Number
     },
 
-    fuel_type: {
-        type: String,
-        required: true
+    fuelType: {
+        type: String
     },
 
     transmission: {
-        type: String,
-        required: true
-    },
-
-    condition: {
-        type: String,
-        required: true
+        type: String
     },
 
     color: {
@@ -54,12 +44,10 @@ const carSchema = new Schema({
 
     description: {
         type: String
-    },
-
-    image: {      // ✅ lowercase
-        type: String
     }
 
-}, { timestamps: true })
+}, {
+    timestamps: true
+})
 
 module.exports = mongoose.model("cars", carSchema)

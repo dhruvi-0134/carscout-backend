@@ -1,91 +1,140 @@
-const CarListing = require("../models/CarListingModel")
+const Listing = require("../models/CarListingModel")
 
-const addCarListing = async (req, res) => {
+
+// Create Listing
+const createListing = async (req, res) => {
     try {
-        const carListing = await CarListing.create(req.body)
+        const existingListing = await Listing.findOne({
+            carId: req.body.carId,
+            status: "active"
+        })
+
+        if (existingListing) {
+            return res.status(400).json({
+                message: "Car is already listed"
+            })
+        }
+
+        const newListing = await Listing.create(req.body)
+
         res.status(201).json({
-            message: "Car listing added  successfully",
-            data: carListing
+            message: "Car listing created successfully",
+            data: newListing
         })
+
     } catch (err) {
         res.status(500).json({
-            message: "Car listing added successfully",
-            data: carListing
+            message: "Error creating listing",
+            err
         })
     }
 }
-const getAllCarListings = async (req, res) => {
+
+
+// Get All Listings
+const getAllListings = async (req, res) => {
     try {
-        const listings = await CarListing.find()
-            .populate("seller_id")
-            .populate("car_id");
+
+        const listings = await Listing.find()
+            .populate("carId")
+            .populate("sellerId")
 
         res.status(200).json({
-            message: "Car listing fetched successfully",
+            message: "Listings fetched successfully",
             data: listings
-        });
-    } catch (err) {
-        console.log("ERROR 👉", err);
-        res.status(500).json({
-            message: "Error fetching car listings",
-            error: err.message
-        });
-    }
-};
-const getCarListingById = async (req, res) => {
-    try {
-        const listing = await CarListing.findById(req.params, id)
-            .populate("seller_id")
-            .populate("car_id")
-        res.status(200).json({
-            message: "Car listing fetched successfully",
-            data: listing
         })
+
     } catch (err) {
         res.status(500).json({
-            message: "Error fetching car listing",
+            message: "Error fetching listings",
             err
         })
     }
 }
-const updateCarListing = async (req, res) => {
+
+
+// Get Listing By ID
+const getListingById = async (req, res) => {
     try {
-        const listing = await CarListing.findByIdAndUpdate(
-            req.params.id,
+
+        const listingId = req.params.id
+
+        const listing = await Listing.findById(listingId)
+            .populate("carId")
+            .populate("sellerId")
+
+        if (!listing) {
+            return res.status(404).json({
+                message: "Listing not found"
+            })
+        }
+
+        res.status(200).json({
+            message: "Listing fetched successfully",
+            data: listing
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Error fetching listing",
+            err
+        })
+    }
+}
+
+
+// Update Listing Status
+const updateListing = async (req, res) => {
+    try {
+
+        const listingId = req.params.id
+
+        const updatedListing = await Listing.findByIdAndUpdate(
+            listingId,
             req.body,
-            {
-                new: true
-            }
+            { new: true }
         )
+
         res.status(200).json({
-            message: "Car listing updated successfully",
-            data: listing
+            message: "Listing updated successfully",
+            data: updatedListing
         })
+
     } catch (err) {
         res.status(500).json({
-            message: "Error updating car listing",
+            message: "Error updating listing",
             err
         })
     }
 }
-const deleteCarListing = async (req, res) => {
+
+
+// Delete Listing
+const deleteListing = async (req, res) => {
     try {
-        const listing = await CarListing.findByIdAndDelete(req.params.id)
+
+        const listingId = req.params.id
+
+        const deletedListing = await Listing.findByIdAndDelete(listingId)
+
         res.status(200).json({
-            message: "Car listing deleted successfully",
-            data: listing
+            message: "Listing deleted successfully",
+            data: deletedListing
         })
+
     } catch (err) {
         res.status(500).json({
-            message: "Error deleting car listing",
+            message: "Error deleting listing",
             err
         })
     }
 }
+
+
 module.exports = {
-    addCarListing,
-    getAllCarListings,
-    getCarListingById,
-    updateCarListing,
-    deleteCarListing
+    createListing,
+    getAllListings,
+    getListingById,
+    updateListing,
+    deleteListing
 }

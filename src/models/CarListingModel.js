@@ -1,23 +1,30 @@
 const mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const listingSchema = new Schema({
-    car_id: {
-        type: mongoose.Types.ObjectId,
+
+const listingSchema = new mongoose.Schema({
+
+    carId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: "cars",
         required: true
     },
-    seller_id: {
-        type: mongoose.Types.ObjectId,
+
+    sellerId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: "sellers",
         required: true
     },
-    listing_status: {
+
+    status: {
         type: String,
-        default: "Active"
+        enum: ["active", "sold", "hidden"],
+        default: "active"
     },
-    posted_date: {
+
+    postingDate: {
         type: Date,
         default: Date.now
     }
+
 })
-module.exports = mongoose.model("carlisting", listingSchema)
+
+module.exports = mongoose.model("listings", listingSchema)

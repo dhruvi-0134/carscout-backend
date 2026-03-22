@@ -1,59 +1,52 @@
 const express = require("express")
 const app = express()
 const cors = require("cors")
-require("dotenv").config()
-const port = process.env.PORT
 
+require("dotenv").config()
+
+app.use(express.json())
 app.use(cors())
-app.use(express.json())   // ✅ REQUIRED to read JSON body
-app.use("/uploads", express.static("uploads"))
+app.use("/uploads", express.static("uploads"));
 const DBConnection = require("./src/utils/DBConnection")
 DBConnection()
 
-const adminRouter = require("./src/routes/AdminRoute")
-app.use("/admin", adminRouter)
+const userRoutes = require("./src/routes/UserRoutes")
+app.use("/user", userRoutes)
 
-const buyerRouter = require("./src/routes/BuyerRouter")
-app.use("/buyer", buyerRouter)
+const carRoutes = require("./src/routes/CarRoutes"); // ✅ FIXED
+app.use("/cars", carRoutes)
 
-const sellerRouter = require("./src/routes/SellerRouter")
-app.use("/seller", sellerRouter)
+const listingRoutes = require("./src/routes/CarListingRoutes")
+app.use("/listings", listingRoutes)
 
-const carRouter = require("./src/routes/CarRouter")
-app.use("/car", carRouter)
+const testDriveRoutes = require("./src/routes/TestDriveRoutes")
+app.use("/testdrive", testDriveRoutes)
 
-const carListingRouter = require("./src/routes/CarListingRoutes")
-app.use("/carListing", carListingRouter)
+const transactionRoutes = require("./src/routes/TransactionRoutes")
+app.use("/transactions", transactionRoutes)
 
-const inspectionRouter = require("./src/routes/InspectionRoute")
-app.use("/inspection", inspectionRouter)
+const paymentRoutes = require("./src/routes/PaymentRoutes")
+app.use("/payments", paymentRoutes)
 
-const MediaGalleryRouter = require("./src/routes/MediaGalleryRouter")
-app.use("/mediagallery", MediaGalleryRouter)
+const adminRoutes = require("./src/routes/AdminRoutes")
+app.use("/admin", adminRoutes)
 
-const notificationRouter = require("./src/routes/NotificationRouter")
-app.use("/notification", notificationRouter)
+const reportRoutes = require("./src/routes/InspectionReportRoutes")
+app.use("/reports", reportRoutes)
 
-const OfferNegotiationRouter = require("./src/routes/OfferNegotiationRouter")
-app.use("/offer", OfferNegotiationRouter)
+const mediaRoutes = require("./src/routes/MediaGalleryRoutes")
+app.use("/media", mediaRoutes)
 
-const paymentRouter = require("./src/routes/PaymentRouter")
-app.use("/payment", paymentRouter)
+const offerRoutes = require("./src/routes/OfferRoutes")
+app.use("/offers", offerRoutes)
 
-const reviewRouter = require("./src/routes/ReviewRouter")
-app.use("/review", reviewRouter)
+const feedbackRoutes = require("./src/routes/FeedbackRoutes")
+app.use("/feedback", feedbackRoutes)
 
-const testDriveRouter = require("./src/routes/TestDriveRouter")
-app.use("/testdrive", testDriveRouter)
-
-const transactionRouter = require("./src/routes/TransactionRouter")
-app.use("/transaction", transactionRouter)
-
-const userRouter = require("./src/routes/UserRouter")
-app.use("/user", userRouter)
+const notificationRoutes = require("./src/routes/NotificationRoutes")
+app.use("/notifications", notificationRoutes)
 
 const PORT = process.env.PORT
-
 app.listen(PORT, () => {
     console.log(`server started on port ${PORT}`)
 })

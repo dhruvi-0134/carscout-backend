@@ -1,29 +1,21 @@
-const mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const transactionSchema = new Schema({
-    buyer_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "buyers"
-    },
-    seller_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "sellers"
-    },
-    car_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "cars"
-    },
-    final_price: {
+const mongoose = require("mongoose");
+
+const transactionSchema = new mongoose.Schema({
+    amount: {
         type: Number,
         required: true
     },
-    transaction_status: {
-        type: String,
-        default: "Pending"
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users"
     },
-    transaction_date: {
-        type: Date,
-        default: Date.now
+    status: {
+        type: String,
+        default: "pending"
     }
-})
-module.exports = mongoose.model("transactions", transactionSchema)
+}, { timestamps: true });
+
+// ✅ CORRECT WAY (fixes BOTH errors)
+const Transaction = mongoose.models.transactions || mongoose.model("transactions", transactionSchema);
+
+module.exports = Transaction;

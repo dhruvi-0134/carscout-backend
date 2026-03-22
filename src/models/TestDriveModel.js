@@ -1,25 +1,36 @@
 const mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const testDriveSchema = new Schema({
-    buyer_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "buyers"
+
+const testDriveSchema = new mongoose.Schema({
+
+    buyerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+        required: true
     },
-    seller_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "sellers"
+
+    sellerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "sellers",
+        required: true
     },
-    car_id: {
-        type: mongoose.Types.ObjectId,
-        ref: "cars"
+
+    carId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "cars",
+        required: true
     },
-    scheduled_date: {
+
+    testDriveDate: {
         type: Date,
         required: true
     },
+
     status: {
         type: String,
-        default: "pending"
+        enum: ["requested", "approved", "completed", "cancelled"],
+        default: "requested"
     }
+
 })
+
 module.exports = mongoose.model("testdrives", testDriveSchema)
