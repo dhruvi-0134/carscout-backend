@@ -1,62 +1,46 @@
-const Car = require("../models/CarModel")
-const Media = require("../models/MediaGalleryModel")
-
+const User = require("../models/UserModel");
+const Car = require("../models/CarModel");
+const Media = require("../models/MediaGalleryModel");
+const Seller = require("../models/SellerModel");
 
 // Add Car
 const addCar = async (req, res) => {
     try {
-        {/*const existingCar = await Car.findOne({
-    sellerId:req.body.sellerId,
-    brand:req.body.brand,
-    model:req.body.model,
-    year:req.body.year
-})
+        const userId = req.user.id;
 
-  if(existingCar){
-   return res.status(400).json({
-     message:"Car already exists"
- })
-}*/}
+        const seller = await Seller.findOne({ userId });
+        if (!seller) {
+            return res.status(404).json({ message: "Seller not found" });
+        }
 
-
-
-        const newCar = await Car.create(req.body)
+        const newCar = await Car.create({
+            ...req.body,
+            sellerId: seller._id
+        });
 
         res.status(201).json({
             message: "Car added successfully",
             data: newCar
-        })
+        });
 
     } catch (err) {
-        res.status(500).json({
-            message: "Error while adding car",
-            err
-        })
+        res.status(500).json({ message: "Error while adding car", err: err.message });
     }
-}
-
+};
 
 // Get All Cars
 const getAllCars = async (req, res) => {
     try {
         const cars = await Car.find().populate({
             path: "sellerId",
-            populate: {
-                path: "userId"
-            }
-        })
+            populate: { path: "userId" }
+        });
 
         const carsWithMedia = await Promise.all(
             cars.map(async (car) => {
-
-                const media = await Media.find({
-                    carId: car._id
-                }).select("mediaUrl mediaType");
-
-                return {
-                    ...car.toObject(),
-                    media: media
-                };
+                const media = await Media.find({ carId: car._id })
+                    .select("mediaUrl mediaType");
+                return { ...car.toObject(), media };
             })
         );
 
@@ -66,107 +50,112 @@ const getAllCars = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
+        res.status(500).json({ message: "Error fetching cars", err: err.message });
+    }
+};
 
+// Get Car By ID
+const getCarById = async (req, res) => {
+    try {
+        const car = await Car.findById(req.params.id)
+            .populate({
+                path: "sellerId",
+                populate: { path: "userId" }
+            });
+
+        if (!car) {
+            return res.status(404).json({ message: "Car not found" });
+        }
+
+        const media = await Media.find({ carId: car._id });
+
+        res.status(200).json({
+            message: "Car fetched successfully",
+            data: { ...car.toObject(), media }
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching car", err: err.message });
+    }
+};
+
+// ✅ ONLY ONE VERSION (FINAL)
+const getCarsBySeller = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        const seller = await Seller.findOne({ userId });
+        if (!seller) {
+            return res.status(404).json({ message: "Seller not found" });
+        }
+
+        const cars = await Car.find({ sellerId: seller._id })
+            .populate({
+                path: "sellerId",
+                populate: { path: "userId" }
+            });
+
+        const carsWithMedia = await Promise.all(
+            cars.map(async (car) => {
+                const media = await Media.find({ carId: car._id })
+                    .select("mediaUrl mediaType");
+                return { ...car.toObject(), media };
+            })
+        );
+
+        res.status(200).json({
+            message: "Cars fetched successfully",
+            data: carsWithMedia
+        });
+
+    } catch (err) {
         res.status(500).json({
-            message: "Error fetching cars",
+            message: "Error fetching seller cars",
             err: err.message
         });
     }
 };
-// Get Car By ID
-const getCarById = async (req, res) => {
-    try {
-
-        const carId = req.params.id
-        //get car
-
-        const car = await Car.findById(carId)
-            .populate("sellerId")   // ✅ FIRST LEVEL
-            .populate("sellerId.userId"); // ✅ SECOND LEVEL
-        if (!car) {
-            return res.status(404).json({
-                message: "Car not found"
-            })
-        }
-        // Get media for this car
-        const media = await Media.find({
-            carId: car._id
-        })
-
-        // Combine car + media
-        const carWithMedia = {
-            ...car.toObject(),
-            media: media
-        }
-
-
-        res.status(200).json({
-            message: "Car fetched successfully",
-            data: carWithMedia
-        })
-
-    } catch (err) {
-        res.status(500).json({
-            message: "Error fetching car",
-            err
-        })
-    }
-}
-
 
 // Update Car
 const updateCar = async (req, res) => {
     try {
-
-        const carId = req.params.id
-
         const updatedCar = await Car.findByIdAndUpdate(
-            carId,
+            req.params.id,
             req.body,
             { new: true }
-        )
+        );
 
         res.status(200).json({
             message: "Car updated successfully",
             data: updatedCar
-        })
+        });
 
     } catch (err) {
-        res.status(500).json({
-            message: "Error updating car",
-            err
-        })
+        res.status(500).json({ message: "Error updating car", err: err.message });
     }
-}
-
+};
 
 // Delete Car
 const deleteCar = async (req, res) => {
     try {
-
-        const carId = req.params.id
-
-        const deletedCar = await Car.findByIdAndDelete(carId)
+        const deletedCar = await Car.findByIdAndDelete(req.params.id);
 
         res.status(200).json({
             message: "Car deleted successfully",
             data: deletedCar
-        })
+        });
 
     } catch (err) {
-        res.status(500).json({
-            message: "Error deleting car",
-            err
-        })
+        res.status(500).json({ message: "Error deleting car", err: err.message });
     }
-}
+};
 
-
+// ✅ EXPORT (ONLY ONCE)
 module.exports = {
     addCar,
     getAllCars,
     getCarById,
+    getCarsBySeller,
     updateCar,
     deleteCar
-}
+};

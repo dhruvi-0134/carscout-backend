@@ -34,6 +34,10 @@ const offerSchema = new mongoose.Schema({
     offerDate: {
         type: Date,
         default: Date.now
+    },
+    expiresAt: {
+        type: Date,
+        required: true
     }
 
 })

@@ -34,7 +34,7 @@ const createTestDrive = async (req, res) => {
         const html = `
             <div style="font-family: Arial; padding: 20px;">
                 <h2>🚗 Test Drive Confirmed</h2>
-                <p>Hello ${buyer?.name || "User"},</p>
+                <p>Hello ${buyer?.fullName || "User"},</p>
 
                 <p>Your test drive is successfully booked.</p>
 
@@ -80,9 +80,9 @@ const createTestDrive = async (req, res) => {
 const getAllTestDrives = async (req, res) => {
     try {
         const testDrives = await TestDrive.find()
-            .populate("buyerId")
+            .populate("carId")
             .populate("sellerId")
-            .populate("carId");
+            .lean(); // ✅ important
 
         res.status(200).json({
             message: "Test drives fetched successfully",
@@ -90,13 +90,14 @@ const getAllTestDrives = async (req, res) => {
         });
 
     } catch (err) {
+        console.error("GET TEST DRIVES ERROR:", err); // ✅ debug
+
         res.status(500).json({
             message: "Error fetching test drives",
-            err
+            error: err.message
         });
     }
 };
-
 
 // ✅ GET BY ID
 const getTestDriveById = async (req, res) => {

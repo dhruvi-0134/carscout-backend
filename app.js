@@ -1,52 +1,92 @@
-const express = require("express")
-const app = express()
-const cors = require("cors")
+const express = require("express");
+const http = require("http"); // ✅ Needed for Socket.IO
+const { Server } = require("socket.io");
+const cors = require("cors");
+require("dotenv").config(); // ✅ FIRST
 
-require("dotenv").config()
+const app = express();
 
-app.use(express.json())
-app.use(cors())
+// ✅ CORS (ONLY ONCE)
+app.use(cors({
+    origin: "http://localhost:5173", // your frontend URL
+    credentials: true
+}));
+
+// ✅ BODY PARSER (ONLY ONCE)
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+// ✅ STATIC FILES
 app.use("/uploads", express.static("uploads"));
-const DBConnection = require("./src/utils/DBConnection")
-DBConnection()
 
-const userRoutes = require("./src/routes/UserRoutes")
-app.use("/user", userRoutes)
+// ✅ DB
+const DBConnection = require("./src/utils/DBConnection");
+DBConnection();
 
-const carRoutes = require("./src/routes/CarRoutes"); // ✅ FIXED
-app.use("/cars", carRoutes)
+// ✅ ROUTES
+const userRoutes = require("./src/routes/UserRoutes");
+app.use("/user", userRoutes);
 
-const listingRoutes = require("./src/routes/CarListingRoutes")
-app.use("/listings", listingRoutes)
+const carRoutes = require("./src/routes/CarRoutes");
+app.use("/cars", carRoutes);
 
-const testDriveRoutes = require("./src/routes/TestDriveRoutes")
-app.use("/testdrive", testDriveRoutes)
+const listingRoutes = require("./src/routes/CarListingRoutes");
+app.use("/listings", listingRoutes);
 
-const transactionRoutes = require("./src/routes/TransactionRoutes")
-app.use("/transactions", transactionRoutes)
+const testDriveRoutes = require("./src/routes/TestDriveRoutes");
+app.use("/testdrives", testDriveRoutes);
 
-const paymentRoutes = require("./src/routes/PaymentRoutes")
-app.use("/payments", paymentRoutes)
+const transactionRoutes = require("./src/routes/TransactionRoutes");
+app.use("/transactions", transactionRoutes);
 
-const adminRoutes = require("./src/routes/AdminRoutes")
-app.use("/admin", adminRoutes)
+const paymentRoutes = require("./src/routes/PaymentRoutes");
+app.use("/payments", paymentRoutes);
 
-const reportRoutes = require("./src/routes/InspectionReportRoutes")
-app.use("/reports", reportRoutes)
+const adminRoutes = require("./src/routes/AdminRoutes");
+app.use("/admin", adminRoutes);
 
-const mediaRoutes = require("./src/routes/MediaGalleryRoutes")
-app.use("/media", mediaRoutes)
+const reportRoutes = require("./src/routes/InspectionReportRoutes");
+app.use("/reports", reportRoutes);
 
-const offerRoutes = require("./src/routes/OfferRoutes")
-app.use("/offers", offerRoutes)
+const mediaRoutes = require("./src/routes/MediaGalleryRoutes");
+app.use("/media", mediaRoutes);
 
-const feedbackRoutes = require("./src/routes/FeedbackRoutes")
-app.use("/feedback", feedbackRoutes)
+const offerRoutes = require("./src/routes/OfferRoutes");
+app.use("/offers", offerRoutes);
 
-const notificationRoutes = require("./src/routes/NotificationRoutes")
-app.use("/notifications", notificationRoutes)
+const feedbackRoutes = require("./src/routes/FeedbackRoutes");
+app.use("/feedback", feedbackRoutes);
 
-const PORT = process.env.PORT
-app.listen(PORT, () => {
-    console.log(`server started on port ${PORT}`)
-})
+const notificationRoutes = require("./src/routes/NotificationRoutes");
+app.use("/notifications", notificationRoutes);
+
+// ✅ SERVER SETUP
+const PORT = process.env.PORT || 5000;
+
+// Use HTTP server for Socket.IO
+const server = http.createServer(app);
+
+// ✅ SOCKET.IO SETUP
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"]
+    }
+});
+
+// Make io accessible in controllers
+app.set("io", io);
+
+// ✅ Listen for client connections
+io.on("connection", (socket) => {
+    console.log("New client connected:", socket.id);
+
+    socket.on("disconnect", () => {
+        console.log("Client disconnected:", socket.id);
+    });
+});
+
+// ✅ START SERVER
+server.listen(PORT, () => {
+    console.log(`Server started on port ${PORT} with real-time support`);
+});

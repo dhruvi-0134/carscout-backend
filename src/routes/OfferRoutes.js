@@ -1,10 +1,11 @@
-const express = require("express")
-const router = express.Router()
-const offerController = require("../controllers/OfferController")
+const express = require("express");
+const router = express.Router();
+const offerController = require("../controllers/OfferController"); // ✅ CORRECT
 
-router.post("/add", offerController.createOffer)
-router.get("/get", offerController.getAllOffers)
-router.put("/update/:id", offerController.updateOffer)
-router.delete("/delete/:id", offerController.deleteOffer)
+router.post("/add", offerController.createOffer); // ✅ IMPORTANT
 
-module.exports = router
+router.get("/get", offerController.getAllOffers);
+router.put("/update/:id", offerController.updateOffer);
+router.delete("/delete/:id", offerController.deleteOffer);
+
+module.exports = router;

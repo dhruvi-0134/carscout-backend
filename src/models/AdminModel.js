@@ -4,7 +4,7 @@ const adminSchema = new mongoose.Schema({
 
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        ref: "user",
         required: true
     },
 
@@ -33,4 +33,4 @@ const adminSchema = new mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model("admins", adminSchema)
+module.exports = mongoose.model("admin", adminSchema)

@@ -4,39 +4,42 @@ const secret = "secret"
 const validateToken = async (req, res, next) => {
     try {
         const token = req.headers.authorization
-        console.log(token)
-        //token bearer
+        console.log("TOKEN:", token)
+
         if (token) {
             if (token.startsWith("Bearer ")) {
+
                 const tokenValue = token.split(" ")[1]
-                //verify token using jwt
+
+                // ✅ ONLY VERIFY TOKEN
                 const decodedData = jwt.verify(tokenValue, secret)
-                console.log(decodedData)
+
+                // ✅ attach user data
+                req.user = decodedData
+
+                console.log("DECODED:", decodedData)
+
                 next()
 
-            }
-            else {
-                res.status(401).json({
-                    message: "token is not a bearer token.."
+            } else {
+                return res.status(401).json({
+                    message: "Token is not Bearer format"
                 })
             }
-        }
-        else {
-            res.status(401).json({
-                message: "token is not present.."
+        } else {
+            return res.status(401).json({
+                message: "Token not provided"
             })
         }
 
+    } catch (err) {
+        console.log("TOKEN ERROR:", err.message)
 
-
-    }
-    catch (err) {
-        console.log(err)
-        res.status(500).json({
-            message: "error while validating token",
-            err: err
+        return res.status(401).json({
+            message: "Invalid or expired token",
+            error: err.message
         })
-
     }
 }
+
 module.exports = validateToken
